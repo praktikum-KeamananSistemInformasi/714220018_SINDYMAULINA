@@ -1,231 +1,32 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perbandingan Hash File</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9; /* Latar belakang yang lembut */
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-        th {
-            background-color: #4CAF50; /* Warna hijau untuk header */
-            color: white; /* Teks putih di header */
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2; /* Warna latar belakang baris genap */
-        }
-        tr:hover {
-            background-color: #d4edda; /* Warna hijau muda saat hover */
-        }
-        form {
-            margin-top: 20px;
-            background-color: #e8f5e9; /* Latar belakang form hijau muda */
-            padding: 10px;
-            border-radius: 5px; /* Sudut membulat */
-        }
-        input[type="number"], textarea {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #4CAF50; /* Border hijau */
-            border-radius: 5px; /* Sudut membulat */
-        }
-        input[type="submit"] {
-            background-color: #4CAF50; /* Warna hijau untuk tombol */
-            color: white; /* Teks putih */
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px; /* Sudut membulat */
-            cursor: pointer; /* Kursor pointer saat hover */
-        }
-        input[type="submit"]:hover {
-            background-color: #45a049; /* Warna hijau lebih gelap saat hover */
-        }
-        .update-notification {
-            color: #4CAF50; /* Warna hijau untuk notifikasi */
-            font-weight: bold;
-            margin-left: 10px; /* Jarak dengan teks */
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <title>Halaman Menu</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Perbandingan Hash File</h1>
-    
-    <h2>Informasi Hash</h2>
-    <table>
-        <tr>
-            <th>Deskripsi</th>
-            <th>Hash</th>
-        </tr>
-        <tr>
-            <td>Hash Asli</td>
-            <td id="original-hash">Loading...</td>
-        </tr>
-        <tr>
-            <td>Hash Dimodifikasi</td>
-            <td id="modified-hash">Loading...</td>
-        </tr>
-    </table>
+    <header>
+        <h1>Portal Warung Nusantara</h1>
+        <p>Temukan berbagai warung dengan cita rasa berbeda di setiap halaman.</p>
+    </header>
 
-    <h2>Perbandingan Isi File</h2>
-    <table>
-        <tr>
-            <th>Nomor Baris</th>
-            <th>Isi Asli</th>
-            <th>Isi Dimodifikasi</th>
-        </tr>
-        <tbody id="file-content">
-            <!-- Konten file akan dipopulasi di sini -->
-        </tbody>
-    </table>
+    <main>
+        <div class="card">
+            <a href="./Tugas1/index.html">
+                <h2>Tugas 1</h2>
+                <p>Tugas Praktikum 1</p>
+            </a>
+        </div>
+        <div class="card">
+            <a href="./tugas2/index.html">
+                <h2>Tugas 2</h2>
+                <p>Tugas Praktikum 2</p>
+            </a>
+        </div>
+    </main>
 
-    <h2>Tambah Data di File</h2>
-    <form onsubmit="addData(event);">
-        <textarea id="new_data" rows="4" cols="50" placeholder="Masukkan data baru di sini..." required></textarea><br>
-        <input type="submit" value="Tambah Data">
-    </form>
-
-    <h2>Update Data di File</h2>
-    <form onsubmit="updateData(event);">
-        <label for="line_number">Nomor Baris:</label>
-        <input type="number" id="line_number" min="1" placeholder="Masukkan nomor baris" required>
-        <br>
-        <textarea id="update_data" rows="4" cols="50" placeholder="Masukkan data baru di sini..." required></textarea><br>
-        <input type="submit" value="Update Data">
-    </form>
-
-    <h2>Hapus Data di File</h2>
-    <form onsubmit="deleteData(event);">
-        <label for="delete_number">Nomor Baris untuk Dihapus:</label>
-        <input type="number" id="delete_number" min="1" placeholder="Masukkan nomor baris" required>
-        <input type="submit" value="Hapus Data">
-    </form>
-
-    <script>
-        let originalHash = "";
-        let modifiedHash = "";
-        let fileContents = [];
-        let originalContents = []; // Salinan dari isi asli
-        let updateNotifications = []; // Array untuk menyimpan notifikasi update
-
-        // Fungsi untuk memuat konten dari data.txt
-        async function loadContents() {
-            const response = await fetch('data.txt');
-            const fileData = await response.text();
-            fileContents = fileData.split('\n').filter(line => line); // Menghapus baris kosong
-            originalContents = [...fileContents]; // Simpan salinan isi asli
-            originalHash = calculateHash(fileData);
-            modifiedHash = originalHash; // Inisialisasi dengan hash asli
-            updateTable();
-        }
-
-        // Fungsi untuk menghitung hash
-        function calculateHash(data) {
-            return CryptoJS.SHA256(data).toString();
-        }
-
-        // Fungsi untuk memperbarui tabel
-        function updateTable() {
-            const fileContentTable = document.getElementById('file-content');
-            fileContentTable.innerHTML = "";
-
-            fileContents.forEach((line, index) => {
-                const notification = updateNotifications[index] ? `<span class="update-notification">Updated</span>` : '';
-                fileContentTable.innerHTML += `<tr>
-                    <td>${index + 1}</td>
-                    <td>${originalContents[index]}</td> <!-- Menampilkan isi asli -->
-                    <td>${line} ${notification}</td> <!-- Menampilkan isi dimodifikasi dengan notifikasi -->
-                </tr>`;
-            });
-
-            document.getElementById('original-hash').innerText = originalHash;
-            document.getElementById('modified-hash').innerText = modifiedHash;
-        }
-
-        // Fungsi untuk menambah data
-        async function addData(event) {
-            event.preventDefault(); // Cegah pengiriman form
-            const newData = document.getElementById('new_data').value;
-            fileContents.push(newData); // Tambah isi baru
-            modifiedHash = calculateHash(fileContents.join('\n')); // Hitung hash setelah modifikasi
-            document.getElementById('new_data').value = ''; // Kosongkan input
-
-            // Simpan perubahan ke file
-            await saveChanges();
-
-            updateTable(); // Perbarui tabel
-        }
-
-        // Fungsi untuk menyimpan perubahan ke data.txt
-        async function saveChanges() {
-            const response = await fetch('/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ data: fileContents })
-            });
-            if (!response.ok) {
-                alert("Gagal menyimpan perubahan.");
-            }
-        }
-
-        // Fungsi untuk memperbarui data
-        async function updateData(event) {
-            event.preventDefault(); // Cegah pengiriman form
-            const lineNumber = parseInt(document.getElementById('line_number').value) - 1; // Menghitung indeks baris
-            const newData = document.getElementById('update_data').value;
-
-            if (lineNumber >= 0 && lineNumber < fileContents.length) {
-                fileContents[lineNumber] = newData; // Update isi file
-                modifiedHash = calculateHash(fileContents.join('\n')); // Hitung hash setelah modifikasi
-                updateNotifications[lineNumber] = true; // Tandai baris yang telah diupdate
-                document.getElementById('update_data').value = ''; // Kosongkan input
-
-                // Simpan perubahan ke file
-                await saveChanges();
-
-                updateTable(); // Perbarui tabel
-            } else {
-                alert("Nomor baris tidak valid!");
-            }
-        }
-
-        // Fungsi untuk menghapus data
-        async function deleteData(event) {
-            event.preventDefault(); // Cegah pengiriman form
-            const lineNumber = parseInt(document.getElementById('delete_number').value) - 1; // Menghitung indeks baris
-
-            if (lineNumber >= 0 && lineNumber < fileContents.length) {
-                fileContents.splice(lineNumber, 1); // Hapus isi file
-                modifiedHash = calculateHash(fileContents.join('\n')); // Hitung hash setelah modifikasi
-                document.getElementById('delete_number').value = ''; // Kosongkan input
-
-                // Simpan perubahan ke file
-                await saveChanges();
-
-                updateTable(); // Perbarui tabel
-            } else {
-                alert("Nomor baris tidak valid!");
-            }
-        }
-
-        // Panggil loadContents saat halaman dimuat
-        window.onload = loadContents;
-    </script>
+    <footer>
+        <p>&copy; Sindy maulina - 714220018</p>
+    </footer>
 </body>
 </html>

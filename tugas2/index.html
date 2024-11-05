@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Modelling Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #b9f4b7; /* Warna latar belakang hijau muda */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(13, 255, 0, 0.1);
+            width: 100%;
+        }
+        .form-section, .result-section {
+            flex: 1;
+        }
+        h1 {
+            color: #388e45; /* Warna hijau gelap untuk judul */
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+            color: #43c945;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #85cd95;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: #0eff42; /* Warna hijau gelap saat fokus */
+            background-color: #ffffff;
+        }
+        .form-group textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        .form-group button {
+            background-color: #18812a; /* Warna hijau gelap untuk tombol */
+            color: white;
+            border: none;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .form-group button:hover {
+            background-color: #2e7d32; /* Warna hijau lebih gelap saat hover */
+            transform: translateY(-2px);
+        }
+        .result-container {
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #000000;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background-color: #3ec061; /* Warna hijau gelap untuk header tabel */
+            color: white;
+        }
+        td {
+            background-color: #fafafa;
+            transition: background-color 0.3s;
+        }
+        td:hover {
+            background-color: #f1f1f1;
+        }
+        /* Styling untuk ikon hapus dan update */
+        .icon {
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        /* Responsive styling */
+        @media (max-width: 800px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+        /* Styling for the chart */
+        #riskChart {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+        /* Styling for warning text */
+        .risk-warning {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+        /* Styling for the lamp */
+        .lamp {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 20px auto;
+            transition: background-color 0.3s;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <!-- Form Section -->
+    <div class="form-section">
+        <h1>Threat Modelling Form</h1>
+        <div class="form-group">
+            <label for="aset">Identifikasi Aset:</label>
+            <input type="text" id="aset" placeholder="Masukkan aset (contoh: Server, Database)">
+        </div>
+        <div class="form-group">
+            <label for="ancaman">Pilih Ancaman:</label>
+            <select id="ancaman" onchange="updateDescription()">
+                <option value="">-- Pilih Ancaman --</option>
+                <option value="DoS">Denial of Service (DoS)</option>
+                <option value="Tampering">Tampering</option>
+                <option value="Information Disclosure">Information Disclosure</option>
+                <option value="Phishing">Phishing</option>
+                <option value="Malware">Malware</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="ancaman-desc">Deskripsi Ancaman:</label>
+            <textarea id="ancaman-desc" readonly></textarea>
+        </div>
+        <div class="form-group">
+            <label for="kategori">Kategori Ancaman:</label>
+            <input type="text" id="kategori" placeholder="Masukkan kategori ancaman (contoh: Network, Application)">
+        </div>
+        <div class="form-group">
+            <label for="risk-scores">Penilaian Risiko (DREAD Skor):</label>
+            <input type="number" id="damage" placeholder="Damage Potential (1-10)">
+            <input type="number" id="reproducibility" placeholder="Reproducibility (1-10)">
+            <input type="number" id="exploitability" placeholder="Exploitability (1-10)">
+            <input type="number" id="affected-users" placeholder="Affected Users (1-10)">
+            <input type="number" id="discoverability" placeholder="Discoverability (1-10)">
+        </div>
+        <button onclick="evaluateThreat()">Evaluasi Risiko</button>
+    </div>
+
+    <!-- Result Section -->
+    <div class="result-section">
+        <div class="result-container">
+            <h2>Hasil Evaluasi Risiko</h2>
+            <table id="result-table">
+                <thead>
+                    <tr>
+                        <th>Aset</th>
+                        <th>Ancaman</th>
+                        <th>Kategori Ancaman</th>
+                        <th>Skor Risiko</th>
+                        <th>Penilaian Risiko</th>
+                        <th>Penjelasan Risiko</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <canvas id="riskChart"></canvas>
+            <div id="riskWarning" class="risk-warning"></div>
+            <div id="lamp" class="lamp"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const threatDescriptions = {
+        "DoS": "Serangan yang mengganggu akses layanan dengan membanjiri sistem.",
+        "Tampering": "Perubahan data yang tidak sah pada sistem.",
+        "Information Disclosure": "Penyebaran informasi sensitif tanpa izin.",
+        "Phishing": "Upaya untuk mendapatkan informasi pribadi melalui penipuan.",
+        "Malware": "Perangkat lunak berbahaya yang merusak sistem."
+    };
+
+    let riskChart;
+
+    function updateDescription() {
+        const selectedThreat = document.getElementById("ancaman").value;
+        const descriptionBox = document.getElementById("ancaman-desc");
+        descriptionBox.value = selectedThreat ? threatDescriptions[selectedThreat] : '';
+    }
+
+    function evaluateThreat() {
+        const aset = document.getElementById("aset").value;
+        const ancaman = document.getElementById("ancaman").value;
+        const kategori = document.getElementById("kategori").value;
+        const damage = parseInt(document.getElementById("damage").value) || 0;
+        const reproducibility = parseInt(document.getElementById("reproducibility").value) || 0;
+        const exploitability = parseInt(document.getElementById("exploitability").value) || 0;
+        const affectedUsers = parseInt(document.getElementById("affected-users").value) || 0;
+        const discoverability = parseInt(document.getElementById("discoverability").value) || 0;
+
+        if (aset && ancaman && kategori) {
+            const totalRiskScore = damage + reproducibility + exploitability + affectedUsers + discoverability;
+            const riskDescription = getRiskDescription(totalRiskScore);
+
+            const tableBody = document.getElementById("result-table").querySelector("tbody");
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td>${aset}</td>
+                <td>${ancaman}</td>
+                <td>${kategori}</td>
+                <td>${totalRiskScore}</td>
+                <td>${damage}, ${reproducibility}, ${exploitability}, ${affectedUsers}, ${discoverability}</td>
+                <td>${riskDescription}</td>
+                <td>
+                    
+                    <span class="icon" onclick="deleteData(this)">🗑️</span>
+                </td>
+            `;
+            tableBody.appendChild(newRow);
+
+            // Update the chart
+            updateChart(damage, reproducibility, exploitability, affectedUsers, discoverability);
+
+            // Menambahkan peringatan di bawah grafik berdasarkan skor risiko
+            const warningBox = document.getElementById("riskWarning");
+            const lamp = document.getElementById("lamp");
+
+            if (totalRiskScore >= 40) {
+                warningBox.innerHTML = "Peringatan: Risiko Tinggi. Segera ambil langkah mitigasi.";
+                warningBox.style.color = "red";
+                lamp.style.backgroundColor = "red"; // Warna lampu merah
+                startBlinking(lamp, 500); // Kelap-kelip setiap 500ms
+            } else if (totalRiskScore >= 20) {
+                warningBox.innerHTML = "Catatan: Risiko Sedang. Pertimbangkan langkah-langkah pencegahan.";
+                warningBox.style.color = "orange";
+                lamp.style.backgroundColor = "orange"; // Warna lampu oranye
+                startBlinking(lamp, 1000); // Kelap-kelip setiap 1000ms
+            } else {
+                warningBox.innerHTML = "Info: Risiko Rendah. Langkah mitigasi mungkin tidak mendesak.";
+                warningBox.style.color = "green";
+                lamp.style.backgroundColor = "green"; // Warna lampu hijau
+                stopBlinking(lamp); // Stop kelap-kelip
+            }
+        } else {
+            alert("Harap isi semua kolom yang diperlukan.");
+        }
+    }
+
+    function deleteData(icon) {
+        const row = icon.closest('tr');
+        row.remove();
+    }
+
+    function updateData(icon) {
+        const row = icon.closest('tr');
+        const cells = row.querySelectorAll('td');
+
+        document.getElementById("aset").value = cells[0].innerText;
+        document.getElementById("ancaman").value = cells[1].innerText;
+        document.getElementById("kategori").value = cells[2].innerText;
+        
+        const riskScores = cells[4].innerText.split(', ').map(Number);
+        document.getElementById("damage").value = riskScores[0] || 0;
+        document.getElementById("reproducibility").value = riskScores[1] || 0;
+        document.getElementById("exploitability").value = riskScores[2] || 0;
+        document.getElementById("affected-users").value = riskScores[3] || 0;
+        document.getElementById("discoverability").value = riskScores[4] || 0;
+
+        // Menghapus baris setelah data diambil untuk pembaruan
+        deleteData(icon);
+    }
+
+    function getRiskDescription(score) {
+        if (score >= 40) return "Tindakan segera diperlukan!";
+        else if (score >= 20) return "Perlu dipertimbangkan langkah pencegahan.";
+        return "Risiko terkelola.";
+    }
+
+    function updateChart(damage, reproducibility, exploitability, affectedUsers, discoverability) {
+        const ctx = document.getElementById('riskChart').getContext('2d');
+        const data = {
+            labels: ['Damage', 'Reproducibility', 'Exploitability', 'Affected Users', 'Discoverability'],
+            datasets: [{
+                label: 'Skor Risiko',
+                data: [damage, reproducibility, exploitability, affectedUsers, discoverability],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        if (riskChart) {
+            riskChart.destroy(); // Hancurkan grafik yang lama jika ada
+        }
+        riskChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Skor'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Fungsi untuk memulai kelap-kelip
+    function startBlinking(element, interval) {
+        if (element.blinkInterval) return; // Jika sudah ada interval yang berjalan
+        element.blinkInterval = setInterval(() => {
+            element.style.visibility = (element.style.visibility === 'hidden' ? '' : 'hidden');
+        }, interval);
+    }
+
+    // Fungsi untuk menghentikan kelap-kelip
+    function stopBlinking(element) {
+        clearInterval(element.blinkInterval);
+        element.blinkInterval = null;
+        element.style.visibility = ''; // Pastikan lampu terlihat
+    }
+</script>
+
+</body>
+</html>
